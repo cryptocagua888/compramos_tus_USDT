@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cotizador USDT/VES</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #2a4b8d;
+            --secondary: #f8f9fa;
+            --accent: #ff6b01;
+            --text: #333333;
+            --light: #ffffff;
+            --success: #28a745;
+            --danger: #dc3545;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 15px;
+            color: var(--text);
+            margin: 0;
+            -webkit-text-size-adjust: 100%;
+        }
+        
+        .container {
+            max-width: 100%;
+            padding: 0;
+        }
+        
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: none;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            margin: 0 auto;
+            width: 100%;
+        }
+        
+        .card-header {
+            background-color: var(--primary);
+            color: var(--light);
+            font-weight: bold;
+            text-align: center;
+            padding: 12px 15px;
+            font-size: 1.2rem;
+        }
+        
+        .card-body {
+            padding: 20px 15px;
+        }
+        
+        .price-display {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+            margin: 15px 0;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+        
+        .price-info {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .commission-info {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+        
+        .last-updated {
+            text-align: center;
+            color: #6c757d;
+            font-size: 0.8rem;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .btn-compra {
+            background-color: var(--accent);
+            border: none;
+            color: white;
+            padding: 14px 25px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            display: block;
+            margin: 0 auto 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(255, 107, 1, 0.3);
+            width: 90%;
+            max-width: 280px;
+        }
+        
+        .btn-compra:hover {
+            background-color: #e55f00;
+            transform: scale(1.03);
+        }
+        
+        .info-box {
+            background-color: #e9f7fe;
+            border-left: 4px solid var(--primary);
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        /* Formulario de datos */
+        .form-container {
+            display: none;
+            background-color: var(--secondary);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #ddd;
+        }
+        
+        .form-title {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 5px;
+            display: block;
+            color: #555;
+        }
+        
+        .form-control, .form-select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(42, 75, 141, 0.1);
+        }
+        
+        .form-note {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .monto-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .monto-btn {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .monto-btn:hover {
+            border-color: var(--primary);
+        }
+        
+        .monto-btn.selected {
+            border-color: var(--primary);
+            background-color: #e9f7fe;
+            font-weight: bold;
+        }
+        
+        .countdown-container {
+            display: none;
+            text-align: center;
+            padding: 15px;
+            background-color: var(--secondary);
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        
+        .countdown {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--danger);
+            margin: 12px 0;
+            letter-spacing: 1px;
+        }
+        
+        .screenshot-container {
+            display: none;
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        #screenshotImg {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ddd;
+        }
+        
+        .btn-enviar {
+            display: none;
+            background-color: var(--success);
+            border: none;
+            color: white;
+            padding: 14px 25px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            margin: 15px auto;
+            transition: all 0.3s ease;
+            width: 90%;
+            max-width: 280px;
+        }
+        
+        .btn-enviar:hover {
+            background-color: #218838;
+            transform: scale(1.03);
+        }
+        
+        .message {
+            display: none;
+            text-align: center;
+            padding: 12px;
+            background-color: #fff3cd;
+            color: #856404;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+        
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 15px auto;
+            display: none;
+        }
+        
+        .error-box {
+            display: none;
+            text-align: center;
+            padding: 12px;
+            background-color: #f8d7da;
+            color: #721c24;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .btn-confirmar {
+            background-color: var(--primary);
+            border: none;
+            color: white;
+            padding: 14px 25px;
+            font-size: 1.1rem;
+            border-radius: 50px;
+            display: block;
+            margin: 20px auto 0;
+            transition: all 0.3s ease;
+            width: 90%;
+            max-width: 280px;
+        }
+        
+        .btn-confirmar:hover {
+            background-color: #1e3a6d;
+            transform: scale(1.03);
+        }
+        
+        /* Media queries para responsive */
+        @media (min-width: 576px) {
+            .container {
+                max-width: 540px;
+                margin: 0 auto;
+            }
+            
+            .card-body {
+                padding: 25px;
+            }
+            
+            .price-display {
+                font-size: 2.5rem;
+            }
+            
+            .card-header {
+                font-size: 1.3rem;
+                padding: 15px 20px;
+            }
+            
+            .form-container {
+                padding: 25px;
+            }
+            
+            .monto-options {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .container {
+                max-width: 720px;
+            }
+            
+            .price-display {
+                font-size: 2.8rem;
+            }
+            
+            .card-header {
+                font-size: 1.4rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .price-display {
+                font-size: 1.8rem;
+            }
+            
+            .btn-compra, .btn-enviar, .btn-confirmar {
+                font-size: 1rem;
+                padding: 12px 20px;
+            }
+            
+            .countdown {
+                font-size: 1.8rem;
+            }
+            
+            .form-control, .form-select {
+                padding: 10px 12px;
+                font-size: 0.9rem;
+            }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-coins me-2"></i>Cotizador USDT/VES
+            </div>
+            <div class="card-body">
+                <div class="error-box" id="errorBox">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span id="errorText"></span>
+                </div>
+                
+                <div class="price-display" id="priceDisplay">Cargando...</div>
+                <div class="price-info" id="priceInfo"></div>
+                <div class="commission-info">
+                    <i class="fas fa-info-circle"></i> Precio de BINANCE
+                </div>
+                
+                <div class="last-updated" id="lastUpdated">Última actualización: -</div>
+                
+                <div class="info-box">
+                    <i class="fas fa-info-circle me-2"></i>Precio con ajuste aplicado. El precio se actualiza automáticamente cada 5 minutos.
+                </div>
+                
+                <button class="btn btn-compra" id="btnCompra">
+                    <i class="fas fa-exchange-alt me-2"></i>Vender USDT
+                </button>
+                
+                <!-- Formulario de datos bancarios -->
+                <div class="form-container" id="formContainer">
+                    <h4 class="form-title">Datos para Transferencia Bancaria</h4>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="telefono">Número de Teléfono *</label>
+                        <input type="text" class="form-control" id="telefono" placeholder="0424-1234567" required pattern="[0-9-]{11,15}">
+                        <div class="form-note">Número asociado a tu cuenta bancaria</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="cedula">Cédula de Identidad *</label>
+                        <input type="text" class="form-control" id="cedula" placeholder="Ej: V-12345678" required pattern="[VEve]-?\d{5,9}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="banco">Banco *</label>
+                        <select class="form-select" id="banco" required>
+                            <option value="">Seleccione su banco</option>
+                            <option value="0102">0102 - BANCO DE VENEZUELA</option>
+                            <option value="0104">0104 - BANCO VENEZOLANO DE CREDITO</option>
+                            <option value="0105">0105 - BANCO MERCANTIL</option>
+                            <option value="0108">0108 - BBVA PROVINCIAL</option>
+                            <option value="0114">0114 - BANCARIBE</option>
+                            <option value="0115">0115 - BANCO EXTERIOR</option>
+                            <option value="0128">0128 - BANCO CARONI</option>
+                            <option value="0134">0134 - BANESCO</option>
+                            <option value="0137">0137 - BANCO SOFITASA</option>
+                            <option value="0138">0138 - BANCO PLAZA</option>
+                            <option value="0146">0146 - BANGENTE</option>
+                            <option value="0151">0151 - BANCO FONDO COMUN</option>
+                            <option value="0156">0156 - 100% BANCO</option>
+                            <option value="0157">0157 - DELSUR BANCO UNIVERSAL</option>
+                            <option value="0163">0163 - BANCO DEL TESORO</option>
+                            <option value="0168">0168 - BANCRECER</option>
+                            <option value="0169">0169 - R4 BANCO MICROFINANCIERO C.A.</option>
+                            <option value="0171">0171 - BANCO ACTIVO</option>
+                            <option value="0172">0172 - BANCAMIGA BANCO UNIVERSAL, C.A.</option>
+                            <option value="0173">0173 - BANCO INTERNACIONAL DE DESARROLLO</option>
+                            <option value="0174">0174 - BANPLUS</option>
+                            <option value="0175">0175 - BANCO DIGITAL DE LOS TRABAJADORES, BANCO UNIVERSAL</option>
+                            <option value="0177">0177 - BANFANB</option>
+                            <option value="0178">0178 - N58 BANCO DIGITAL BANCO MICROFINANCIERO S A</option>
+                            <option value="0191">0191 - BANCO NACIONAL DE CREDITO</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="tipoCuenta">Tipo de Cuenta *</label>
+                        <select class="form-select" id="tipoCuenta" required>
+                            <option value="">Seleccione el tipo de cuenta</option>
+                            <option value="ahorro">Cuenta de Ahorro</option>
+                            <option value="corriente">Cuenta Corriente</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="numeroCuenta">Número de Cuenta *</label>
+                        <input type="text" class="form-control" id="numeroCuenta" placeholder="Ej: 12345678901234567890" required pattern="[0-9]{15,20}">
+                        <div class="form-note">Ingrese solo números (15-20 dígitos)</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="nombreTitular">Nombre del Titular *</label>
+                        <input type="text" class="form-control" id="nombreTitular" placeholder="Nombre y apellido como aparece en la cuenta" required>
+                        <div class="form-note">Debe coincidir exactamente con el nombre registrado en el banco</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="email">Correo Electrónico *</label>
+                        <input type="email" class="form-control" id="email" placeholder="tu@email.com" required>
+                        <div class="form-note">Te enviaremos el comprobante a este correo</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Monto a Vender (USDT) *</label>
+                        <div class="monto-options">
+                            <div class="monto-btn" data-monto="20">20 USDT</div>
+                            <div class="monto-btn" data-monto="50">50 USDT</div>
+                            <div class="monto-btn" data-monto="100">100 USDT</div>
+                            <div class="monto-btn" data-monto="150">150 USDT</div>
+                            <div class="monto-btn" data-monto="200">200 USDT</div>
+                            <div class="monto-btn" data-monto="otro">Otro monto</div>
+                        </div>
+                        <input type="number" class="form-control" id="montoPersonalizado" placeholder="Especificar monto en USDT" style="display: none;" min="1" step="0.01">
+                        <div class="form-note" id="montoCalculado"></div>
+                    </div>
+
+                    <button class="btn btn-confirmar" id="btnConfirmar">
+                        <i class="fas fa-check-circle me-2"></i>Confirmar Venta
+                    </button>
+                </div>
+                
+                <div class="countdown-container" id="countdownContainer">
+                    <h4>Confirmación de venta</h4>
+                    <p>Tienes 10 minutos para completar tu transacción. Toma una captura de esta pantalla como comprobante.</p>
+                    <div class="countdown" id="countdown">10:00</div>
+                </div>
+                
+                <div class="screenshot-container" id="screenshotContainer">
+                    <h5>Captura de pantalla:</h5>
+                    <img id="screenshotImg" alt="Captura de compra">
+                </div>
+                
+                <button class="btn btn-enviar" id="btnEnviar">
+                    <i class="fas fa-paper-plane me-2"></i>Enviar comprobante
+                </button>
+                
+                <div class="message" id="message">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <span id="messageText"></span>
+                </div>
+                
+                <div class="loader" id="loader"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elementos del DOM
+            const priceDisplay = document.getElementById('priceDisplay');
+            const priceInfo = document.getElementById('priceInfo');
+            const lastUpdated = document.getElementById('lastUpdated');
+            const btnCompra = document.getElementById('btnCompra');
+            const formContainer = document.getElementById('formContainer');
+            const btnConfirmar = document.getElementById('btnConfirmar');
+            const countdownContainer = document.getElementById('countdownContainer');
+            const countdown = document.getElementById('countdown');
+            const screenshotContainer = document.getElementById('screenshotContainer');
+            const screenshotImg = document.getElementById('screenshotImg');
+            const btnEnviar = document.getElementById('btnEnviar');
+            const message = document.getElementById('message');
+            const messageText = document.getElementById('messageText');
+            const loader = document.getElementById('loader');
+            const errorBox = document.getElementById('errorBox');
+            const errorText = document.getElementById('errorText');
+            const montoPersonalizado = document.getElementById('montoPersonalizado');
+            const montoCalculado = document.getElementById('montoCalculado');
+            const montoBtns = document.querySelectorAll('.monto-btn');
+            
+            // Variables
+            let updateInterval;
+            let countdownInterval;
+            let tiempoRestante = 600;
+            const URL_DESTINO = "https://t.me/cryptocagua_cajero";
+            let precioActual = 0;
+            let precioOriginal = 0;
+            let montoSeleccionado = 0;
+            let capturaTomada = false;
+            const COMISION = 0.012; // 1.2% de comisión
+            
+            // Formatear fecha
+            function formatearFecha(fecha) {
+                const opciones = { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    timeZone: 'America/Caracas'
+                };
+                return new Date(fecha).toLocaleDateString('es-ES', opciones);
+            }
+            
+            // Ajustar precio restando 1 bolívar
+            function ajustarPrecio(precio) {
+                return precio - 1;
+            }
+            
+            // Aplicar comisión al monto total
+            function aplicarComision(monto) {
+                return monto * (1 - COMISION);
+            }
+            
+            // Función robusta para convertir texto a número
+            function convertirTextoANumero(texto) {
+                const textoLimpio = texto.trim().replace(/[^\d.,]/g, '');
+                const textoConPunto = textoLimpio.replace(',', '.');
+                const numero = parseFloat(textoConPunto);
+                
+                if (isNaN(numero)) {
+                    throw new Error('El valor no es un número válido');
+                }
+                
+                return numero;
+            }
+            
+            // Calcular monto en VES con comisión aplicada
+            function calcularMontoVES() {
+                if (montoSeleccionado > 0 && precioActual > 0) {
+                    const totalSinComision = montoSeleccionado * precioActual;
+                    const totalConComision = aplicarComision(totalSinComision);
+                    montoCalculado.textContent = `Total a recibir: ${totalConComision.toFixed(2)} VES (incluye comisión )`;
+                } else {
+                    montoCalculado.textContent = '';
+                }
+            }
+            
+            // Validar formulario
+            function validarFormulario() {
+                const campos = ['telefono', 'cedula', 'banco', 'tipoCuenta', 'numeroCuenta', 'nombreTitular', 'email'];
+                for (const campo of campos) {
+                    const input = document.getElementById(campo);
+                    if (!input.value.trim()) {
+                        alert(`Por favor complete el campo: ${input.previousElementSibling.textContent}`);
+                        input.focus();
+                        return false;
+                    }
+                }
+                
+                // Validar que se haya seleccionado un monto
+                if (montoSeleccionado <= 0) {
+                    alert('Por favor seleccione un monto a vender');
+                    return false;
+                }
+                
+                // Validar email
+                const email = document.getElementById('email').value;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    alert('Por favor ingrese un correo electrónico válido');
+                    document.getElementById('email').focus();
+                    return false;
+                }
+                
+                // Validar patrón de teléfono
+                const telefono = document.getElementById('telefono').value;
+                if (!/^[0-9-]{11,15}$/.test(telefono)) {
+                    alert('Por favor ingrese un número de teléfono válido (formato: 0412-1234567)');
+                    document.getElementById('telefono').focus();
+                    return false;
+                }
+                
+                // Validar patrón de cédula
+                const cedula = document.getElementById('cedula').value;
+                if (!/^[VEve]-?\d{5,9}$/.test(cedula)) {
+                    alert('Por favor ingrese una cédula válida (formato: V-12345678)');
+                    document.getElementById('cedula').focus();
+                    return false;
+                }
+                
+                // Validar patrón de número de cuenta
+                const numeroCuenta = document.getElementById('numeroCuenta').value;
+                if (!/^[0-9]{15,20}$/.test(numeroCuenta)) {
+                    alert('Por favor ingrese un número de cuenta válido (solo números, 15-20 dígitos)');
+                    document.getElementById('numeroCuenta').focus();
+                    return false;
+                }
+                
+                return true;
+            }
+            
+            // Obtener precio de USDT/VES desde la API de Yadio
+            async function obtenerPrecio() {
+                try {
+                    loader.style.display = 'block';
+                    errorBox.style.display = 'none';
+                    
+                    const respuesta = await fetch('https://api.yadio.io/rate/VES/USD');
+                    
+                    if (!respuesta.ok) {
+                        throw new Error(`Error HTTP: ${respuesta.status}`);
+                    }
+                    
+                    const texto = await respuesta.text();
+                    precioOriginal = convertirTextoANumero(texto);
+                    precioActual = ajustarPrecio(precioOriginal);
+                    
+                    priceDisplay.textContent = `1 USDT = ${precioActual.toFixed(2)} VES`;
+                    priceInfo.textContent = `Precio de mercado: ${precioActual.toFixed(2)} VES`;
+                    lastUpdated.textContent = `Actualizado: ${formatearFecha(Date.now())}`;
+                    
+                } catch (error) {
+                    console.error('Error al obtener el precio:', error);
+                    errorText.textContent = `Error: ${error.message || 'No se pudo obtener el precio'}`;
+                    errorBox.style.display = 'block';
+                    priceDisplay.textContent = 'Error al cargar el precio';
+                    priceInfo.textContent = '';
+                    lastUpdated.textContent = 'Intenta de nuevo más tarde';
+                } finally {
+                    loader.style.display = 'none';
+                }
+            }
+            
+            // Función para guardar la imagen en el dispositivo
+            function guardarImagen(canvas) {
+                const enlace = document.createElement('a');
+                enlace.download = 'comprobante-venta-usdt-' + new Date().toISOString().replace(/:/g, '-') + '.png';
+                enlace.href = canvas.toDataURL('image/png');
+                document.body.appendChild(enlace);
+                enlace.click();
+                document.body.removeChild(enlace);
+            }
+            
+            // Tomar captura y guardarla
+            function tomarCaptura() {
+                const cardOriginal = document.querySelector('.card');
+                const clone = cardOriginal.cloneNode(true);
+                
+                const cloneBtnEnviar = clone.querySelector('#btnEnviar');
+                if (cloneBtnEnviar) cloneBtnEnviar.style.display = 'none';
+                
+                const cloneMessage = clone.querySelector('#message');
+                if (cloneMessage) cloneMessage.style.display = 'none';
+                
+                const cloneLoader = clone.querySelector('#loader');
+                if (cloneLoader) cloneLoader.style.display = 'none';
+                
+                clone.style.position = 'absolute';
+                clone.style.left = '-9999px';
+                clone.style.width = cardOriginal.offsetWidth + 'px';
+                
+                document.body.appendChild(clone);
+                
+                html2canvas(clone, {
+                    scale: 2,
+                    logging: false,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                }).then(canvas => {
+                    screenshotImg.src = canvas.toDataURL();
+                    screenshotContainer.style.display = 'block';
+                    
+                    guardarImagen(canvas);
+                    
+                    capturaTomada = true;
+                    
+                    messageText.textContent = 'Captura de pantalla guardada en tu dispositivo. Ahora puedes enviar el comprobante.';
+                    message.style.display = 'block';
+                    
+                    document.body.removeChild(clone);
+                    
+                }).catch(error => {
+                    console.error('Error al tomar la captura:', error);
+                    messageText.textContent = 'Error al guardar la captura. Por favor, toma una captura manualmente.';
+                    message.style.display = 'block';
+                    
+                    if (document.body.contains(clone)) {
+                        document.body.removeChild(clone);
+                    }
+                });
+            }
+            
+            // Iniciar proceso de venta
+            function iniciarProcesoVenta() {
+                if (validarFormulario()) {
+                    tomarCaptura();
+                    
+                    formContainer.style.display = 'none';
+                    countdownContainer.style.display = 'block';
+                    btnEnviar.style.display = 'block';
+                    
+                    iniciarCountdown();
+                }
+            }
+            
+            // Iniciar contador regresivo
+            function iniciarCountdown() {
+                tiempoRestante = 600;
+                countdownInterval = setInterval(() => {
+                    tiempoRestante--;
+                    
+                    const minutos = Math.floor(tiempoRestante / 60);
+                    const segundos = tiempoRestante % 60;
+                    
+                    countdown.textContent = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+                    
+                    if (tiempoRestante <= 0) {
+                        clearInterval(countdownInterval);
+                        messageText.textContent = 'El tiempo de confirmación ha expirado. Si no realizaste la transacción, debes iniciar una nueva venta.';
+                        message.style.display = 'block';
+                        obtenerPrecio();
+                    }
+                }, 1000);
+            }
+            
+            // Redirigir a URL
+            function redirigir() {
+                if (capturaTomada) {
+                    window.location.href = URL_DESTINO;
+                } else {
+                    messageText.textContent = 'Por favor, complete el proceso de confirmación primero.';
+                    message.style.display = 'block';
+                }
+            }
+            
+            // Manejar selección de montos
+            montoBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    montoBtns.forEach(b => b.classList.remove('selected'));
+                    
+                    this.classList.add('selected');
+                    
+                    const monto = this.getAttribute('data-monto');
+                    
+                    if (monto === 'otro') {
+                        montoPersonalizado.style.display = 'block';
+                        montoPersonalizado.focus();
+                        montoSeleccionado = 0;
+                    } else {
+                        montoPersonalizado.style.display = 'none';
+                        montoSeleccionado = parseFloat(monto);
+                        calcularMontoVES();
+                    }
+                });
+            });
+            
+            // Manejar monto personalizado
+            montoPersonalizado.addEventListener('input', function() {
+                montoSeleccionado = parseFloat(this.value) || 0;
+                calcularMontoVES();
+            });
+            
+            // Mostrar formulario al hacer clic en Vender
+            btnCompra.addEventListener('click', function() {
+                formContainer.style.display = 'block';
+                btnCompra.style.display = 'none';
+            });
+            
+            // Confirmar venta
+            btnConfirmar.addEventListener('click', iniciarProcesoVenta);
+            
+            // Enviar comprobante
+            btnEnviar.addEventListener('click', redirigir);
+            
+            // Inicializar
+            obtenerPrecio();
+            
+            // Actualizar cada 5 minutos
+            updateInterval = setInterval(obtenerPrecio, 300000);
+        });
+    </script>
+</body>
+</html>
